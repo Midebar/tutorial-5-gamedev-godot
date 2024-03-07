@@ -18,6 +18,8 @@ var dash_cooldown_timer = 0
 var dash_direction = Vector2.ZERO
 
 func get_input():
+	var animation = "stand_right"
+	var flip_direction = false
 	velocity.x = 0
 	if is_on_floor() and Input.is_action_just_pressed('ui_up'):
 		velocity.y = jump_speed
@@ -28,27 +30,34 @@ func get_input():
 	
 	if Input.is_action_pressed('ui_right'):
 		velocity.x += speed
+		animation = "move_to_right"
+		flip_direction = false
 	elif Input.is_action_pressed('ui_left'):
 		velocity.x -= speed
+		animation = "move_to_right"
+		flip_direction = true
 
 	# Dash when Shift key is pressed
 	if Input.is_action_pressed('ui_shift') and (Input.is_action_pressed('ui_right') or Input.is_action_pressed('ui_left')) and dash_cooldown_timer <= 0:
 		if Input.is_action_pressed('ui_right'):
 			dash_direction = Vector2.RIGHT
+			animation = "move_to_right"
+			flip_direction = false
 		elif Input.is_action_pressed('ui_left'):
 			dash_direction = Vector2.LEFT
+			animation = "move_to_right"
+			flip_direction = true
 		dash_timer = dash_duration
 		dash_cooldown_timer = dash_cooldown
+
+	if $AnimatedSprite.animation != animation:
+		$AnimatedSprite.play(animation)
+		$AnimatedSprite.flip_h = flip_direction
 
 func _physics_process(delta):
 	if dash_timer > 0:
 		velocity = dash_direction * dash_speed
 		dash_timer -= delta
-#		print("Dash timer: ", dash_timer)
-#		var dash_increment = dash_direction * (dash_speed / dash_duration) * delta
-#		print("Dash increment: ", dash_increment)
-#		velocity += dash_increment
-#		print("Velocity during dash: ", velocity)
 	else:
 		if dash_cooldown_timer > 0:
 			dash_cooldown_timer -= delta
